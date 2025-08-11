@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  VISITANTE
+  ADMIN
+}
+
+model Usuario {
+  id         String      @id @default(uuid())
+  nome       String
+  email      String      @unique
+  senha      String
+  role       Role        @default(VISITANTE)
+  perfil     Perfil?
+  filmes     Filme[]     @relation("PostagensFilmes")
+  series     Serie[]     @relation("PostagensSeries")
+  avaliacoes Avaliacao[]
+  filmesFavoritos Filme[] @relation("FilmesFavoritos")
+  seriesFavoritas Serie[] @relation("SeriesFavoritas")
+}
+
+model Perfil {
+  id        String  @id @default(uuid())
+  bio       String?
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  usuarioId String  @unique
+}
+
+model Filme {
+  id          String      @id @default(uuid())
+  titulo      String
+  descricao   String?
+  lancamento  DateTime?
+  diretor     String?
+  posterUrl   String? // <-- ADICIONE ESTA LINHA
+  criador     Usuario     @relation("PostagensFilmes", fields: [criadorId], references: [id])
+  criadorId   String
+  generos     Genero[]    @relation("FilmeGenero")
+  avaliacoes  Avaliacao[]
+  favoritadoPor Usuario[] @relation("FilmesFavoritos")
+}
+
+model Serie {
+  id          String      @id @default(uuid())
+  titulo      String
+  descricao   String?
+  lancamento  DateTime?
+  diretor     String?
+  posterUrl   String? // <-- ADICIONE ESTA LINHA
+  criador     Usuario     @relation("PostagensSeries", fields: [criadorId], references: [id])
+  criadorId   String
+  generos     Genero[]    @relation("SerieGenero")
+  avaliacoes  Avaliacao[]
+  temporadas  Temporada[]
+  favoritadoPor Usuario[] @relation("SeriesFavoritas")
+}
+
+model Temporada {
+  id        String     @id @default(uuid())
+  numero    Int
+  serie     Serie      @relation(fields: [serieId], references: [id])
+  serieId   String
+  episodios Episodio[]
+}
+
+model Episodio {
+  id          String    @id @default(uuid())
+  numero      Int
+  titulo      String
+  descricao   String?
+  lancamento  DateTime?
+  temporada   Temporada @relation(fields: [temporadaId], references: [id])
+  temporadaId String
+}
+
+model Genero {
+  id     String  @id @default(uuid())
+  nome   String  @unique
+  filmes Filme[] @relation("FilmeGenero")
+  series Serie[] @relation("SerieGenero")
+}
+
+model Avaliacao {
+  id         String   @id @default(uuid())
+  nota       Int
+  comentario String?
+  criadaEm   DateTime @default(now())
+  dataAssistido DateTime? @map("data_assistido")
+  reassistido   Boolean?
+  contemSpoiler Boolean?  @map("contem_spoiler")
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  usuarioId String
+  filme     Filme?  @relation(fields: [filmeId], references: [id])
+  filmeId   String?
+  serie     Serie?  @relation(fields: [serieId], references: [id])
+  serieId   String?
+}

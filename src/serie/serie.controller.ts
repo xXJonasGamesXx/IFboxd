@@ -1,0 +1,51 @@
+// ARQUIVO: src/serie/serie.controller.ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { SerieService } from './serie.service';
+import { CreateSerieDto } from './dto/create-serie.dto';
+import { UpdateSerieDto } from './dto/update-serie.dto';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('serie')
+@Controller('serie')
+export class SerieController {
+  constructor(private readonly serieService: SerieService) {}
+
+  @Post()
+  create(@Body() createSerieDto: CreateSerieDto) {
+    return this.serieService.create(createSerieDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.serieService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.serieService.findOne(id);
+  }
+
+  // ADICIONE ESTE NOVO ENDPOINT
+  @Get(':id/avaliacoes')
+  findAvaliacoes(@Param('id') id: string) {
+    return this.serieService.findAvaliacoes(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateSerieDto: UpdateSerieDto) {
+    return this.serieService.update(id, updateSerieDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.serieService.remove(id);
+  }
+}
